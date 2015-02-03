@@ -5,4 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string name="bt_startAlert">Start Alert</string>
+    <string name="bt_stopAlert">Stop Alert</string>
+
 </resources>
