@@ -1,5 +1,8 @@
 package oldenburg.philipp.ovenalerter;
 
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -9,25 +12,52 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.NumberPicker;
 
 
 public class MainActivityActivity extends ActionBarActivity {
 
     private boolean running = false;
-    private int secondsBetweenBeeps = 5;
+    private int secondsBetweenBeeps = 5 * 60;
+    private Ringtone ringtone;
+    private Chronometer chronometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        final Chronometer chronometer = (Chronometer) findViewById(R.id.chronometer);
+        NumberPicker numberPicker = (NumberPicker) findViewById(R.id.numberPicker);
+        String[] numbers = new String[60];
+        for(int i=0; i<numbers.length; i++)
+            numbers[i] = Integer.toString(i+1);
+        numberPicker.setWrapSelectorWheel(false);
+        numberPicker.setDisplayedValues(numbers);
+        numberPicker.setMinValue(1);
+        numberPicker.setMaxValue(60);
+        numberPicker.setValue(5);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                secondsBetweenBeeps = newVal * 60;
+                chronometer.setBase(SystemClock.elapsedRealtime());
+            }
+        });
+
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            ringtone = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
                 int elapsedTime = (int) ((SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000);
-                if( elapsedTime != 0 && elapsedTime % secondsBetweenBeeps == 0)
-                    Log.d("debug", "" + elapsedTime);
+                if (elapsedTime != 0 && elapsedTime % secondsBetweenBeeps == 0)
+                    ringtone.play();
             }
         });
 
